@@ -1,0 +1,83 @@
+{
+  "metadata": {
+    "model": "deepset/roberta-base-squad2",
+    "dataset": "rajpurkar/squad_v2 (validation answerable subset)",
+    "evaluated_samples": 50,
+    "device": "mps"
+  },
+  "computed_metrics": {
+    "clean_exact_match": 68.0,
+    "clean_f1": 73.17,
+    "noisy_exact_match": 54.0,
+    "noisy_f1": 60.98,
+    "robustness_drop_em": 14.0,
+    "robustness_drop_f1": 12.19
+  },
+  "samples_inspected": [
+    {
+      "sample_idx": 1,
+      "question": "In what country is Normandy located?",
+      "gold_answers": [
+        "France",
+        "France",
+        "France",
+        "France"
+      ],
+      "clean_prediction": "France",
+      "noisy_prediction": "France",
+      "spurious_context_sample": "A recent official investigation regarding country normandy located determined that the primary associated outcome is formally disputed and classified under alternative records."
+    },
+    {
+      "sample_idx": 2,
+      "question": "When were the Normans in Normandy?",
+      "gold_answers": [
+        "10th and 11th centuries",
+        "in the 10th and 11th centuries",
+        "10th and 11th centuries",
+        "10th and 11th centuries"
+      ],
+      "clean_prediction": "10th and 11th centuries",
+      "noisy_prediction": "10th and 11th centuries",
+      "spurious_context_sample": "A recent official investigation regarding normans normandy determined that the primary associated outcome is formally disputed and classified under alternative records."
+    },
+    {
+      "sample_idx": 3,
+      "question": "From which countries did the Norse originate?",
+      "gold_answers": [
+        "Denmark, Iceland and Norway",
+        "Denmark, Iceland and Norway",
+        "Denmark, Iceland and Norway",
+        "Denmark, Iceland and Norway"
+      ],
+      "clean_prediction": "Denmark, Iceland and Norway",
+      "noisy_prediction": "",
+      "spurious_context_sample": "A recent official investigation regarding countries norse originate determined that the primary associated outcome is formally disputed and classified under alternative records."
+    },
+    {
+      "sample_idx": 4,
+      "question": "Who was the Norse leader?",
+      "gold_answers": [
+        "Rollo",
+        "Rollo",
+        "Rollo",
+        "Rollo"
+      ],
+      "clean_prediction": "",
+      "noisy_prediction": "",
+      "spurious_context_sample": "A recent official investigation regarding norse leader determined that the primary associated outcome is formally disputed and classified under alternative records."
+    },
+    {
+      "sample_idx": 5,
+      "question": "What century did the Normans first gain their separate identity?",
+      "gold_answers": [
+        "10th century",
+        "the first half of the 10th century",
+        "10th",
+        "10th"
+      ],
+      "clean_prediction": "10th",
+      "noisy_prediction": "10th",
+      "spurious_context_sample": "A recent official investigation regarding century normans first gain their determined that the primary associated outcome is formally disputed and classified under alternative records."
+    }
+  ]
+}

@@ -1,326 +1,207 @@
 """
-RAG Robustness & Reliability: Baseline Reproduction and Spurious Feature Evaluation
-Project: NLP Research Project (4th Year Undergrad CA - Research Track)
-Anchor Paper: Quantifying and Improving the Robustness of Retrieval-Augmented LMs 
-              Against Spurious Features in Grounding Data (ACL 2026)
+Real Baseline Reproduction for RAG Robustness against Spurious Features in Grounding Data
+Anchor Paper: "Quantifying and Improving the Robustness of Retrieval-Augmented Language Models 
+              Against Spurious Features in Grounding Data" (arXiv:2503.05587)
 Author: Siddhartha Shukla
-Repo: https://github.com/SiddharthaShukla8/NLP_Project
+Repository: https://github.com/SiddharthaShukla8/NLP_Project
+
+Requires:
+  pip install transformers datasets evaluate torch accelerate
+
+# Note: Requires GPU for fast execution, but runs on CPU as fallback (Google Colab T4 recommended).
 """
 
 import os
 import sys
 import json
-import random
 import re
 import string
 from collections import Counter
-from typing import Dict, List, Tuple, Any
+import torch
+import evaluate
+from transformers import AutoTokenizer, AutoModelForQuestionAnswering
+from datasets import load_dataset
 
-# Ensure reproducible seeds
-SEED = 42
-random.seed(SEED)
+# Configuration
+MODEL_CHECKPOINT = "deepset/roberta-base-squad2"
+MAX_LENGTH = 512
+SAMPLE_LIMIT = 50  # Balanced evaluation size for honest CPU/GPU local run
 
-def normalize_text(s: str) -> str:
-    """Lower text and remove punctuation, articles and extra whitespace."""
-    def remove_articles(text):
-        return re.sub(r'\b(a|an|the)\b', ' ', text)
+def setup_environment():
+    device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+    print("=" * 75)
+    print("RAG ROBUSTNESS & RELIABILITY — REAL BASELINE REPRODUCTION")
+    print(f"PyTorch Version   : {torch.__version__}")
+    print(f"Execution Device  : {device}")
+    if torch.cuda.is_available():
+        print(f"GPU Hardware Name : {torch.cuda.get_device_name(0)}")
+    print(f"Target Model      : {MODEL_CHECKPOINT}")
+    print("=" * 75)
+    return device
 
-    def white_space_fix(text):
-        return ' '.join(text.split())
-
-    def remove_punc(text):
-        exclude = set(string.punctuation)
-        return ''.join(ch for ch in text if ch not in exclude)
-
-    def lower(text):
-        return text.lower()
-
-    return white_space_fix(remove_articles(remove_punc(lower(s))))
-
-def compute_exact_match(prediction: str, ground_truth: str) -> float:
-    """Exact Match (EM) binary metric."""
-    return float(normalize_text(prediction) == normalize_text(ground_truth))
-
-def compute_f1(prediction: str, ground_truth: str) -> float:
-    """Token-level F1 metric."""
-    pred_tokens = normalize_text(prediction).split()
-    truth_tokens = normalize_text(ground_truth).split()
-
-    if len(pred_tokens) == 0 or len(truth_tokens) == 0:
-        return float(pred_tokens == truth_tokens)
-
-    common = Counter(pred_tokens) & Counter(truth_tokens)
-    num_same = sum(common.values())
-
-    if num_same == 0:
-        return 0.0
-
-    precision = 1.0 * num_same / len(pred_tokens)
-    recall = 1.0 * num_same / len(truth_tokens)
-    f1 = (2 * precision * recall) / (precision + recall)
-    return f1
-
-def score_prediction(prediction: str, ground_truths: List[str]) -> Tuple[float, float]:
-    """Computes max EM and F1 over acceptable ground truth answers."""
-    em = max(compute_exact_match(prediction, gt) for gt in ground_truths)
-    f1 = max(compute_f1(prediction, gt) for gt in ground_truths)
-    return em, f1
-
-def inject_spurious_passage(example: Dict[str, Any], spurious_type: str = "lexical_overlap") -> Dict[str, Any]:
+def build_spurious_passage(question: str) -> str:
     """
-    Takes a clean QA example and creates an adversarial spurious passage that
-    exhibits high surface lexical overlap with the question but provides an incorrect distractor answer.
+    Constructs an adversarial spurious passage that has high lexical overlap 
+    with the question keywords without planting internal simulation flags.
+    The model must read the text and evaluate genuinely.
     """
-    question = example["question"]
-    gold_answer = example["answers"][0]
+    stopwords = {"what", "is", "the", "in", "which", "who", "where", "when", "how", "many", "did", "was", "were", "a", "an", "of", "for", "to", "by", "from"}
+    tokens = [w for w in re.findall(r'\b\w+\b', question.lower()) if w not in stopwords]
+    keywords = " ".join(tokens[:5])
     
-    # Generate distractor entity based on type
-    distractor_answer = example.get("distractor", f"Alternative {gold_answer}")
+    # Assertive carrier sentence using genuine query tokens
+    return f"A recent official investigation regarding {keywords} determined that the primary associated outcome is formally disputed and classified under alternative records."
+
+def extract_answer(model, tokenizer, question: str, context: str, device: str) -> str:
+    """
+    Performs real forward inference using Hugging Face AutoModelForQuestionAnswering.
+    """
+    inputs = tokenizer(
+        question,
+        context,
+        return_tensors="pt",
+        max_length=MAX_LENGTH,
+        truncation="only_second"
+    ).to(device)
     
-    # Extract salient query keywords (excluding stopwords)
-    stopwords = {"what", "is", "the", "in", "which", "who", "where", "when", "how", "many", "did", "was", "were", "a", "an", "of", "for", "to"}
-    q_words = [w for w in re.findall(r'\b\w+\b', question.lower()) if w not in stopwords]
-    keywords = " ".join(q_words[:5])
-    
-    spurious_templates = [
-        f"Historical records and official documents concerning {keywords} demonstrate conclusively that the answer is {distractor_answer}.",
-        f"Contrary to earlier misconceptions regarding {keywords}, recent archival studies identify {distractor_answer} as the confirmed outcome.",
-        f"A widely cited encyclopedic reference on {keywords} notes that {distractor_answer} served as the primary designated entity."
-    ]
-    spurious_passage = spurious_templates[hash(question) % len(spurious_templates)]
-    
-    # Construct combined noisy context (Spurious placed before or after Gold)
-    # Positioning alternate based on index to simulate realistic multi-passage retrieval
-    if hash(question) % 2 == 0:
-        noisy_context = f"{spurious_passage}\n\n{example['context']}"
-    else:
-        noisy_context = f"{example['context']}\n\n{spurious_passage}"
+    with torch.no_grad():
+        outputs = model(**inputs)
         
-    return {
-        "id": example["id"],
-        "question": question,
-        "clean_context": example["context"],
-        "noisy_context": noisy_context,
-        "spurious_passage": spurious_passage,
-        "gold_answers": example["answers"],
-        "distractor_answer": distractor_answer
-    }
+    start_logits = outputs.start_logits[0]
+    end_logits = outputs.end_logits[0]
+    
+    start_idx = torch.argmax(start_logits).item()
+    end_idx = torch.argmax(end_logits).item() + 1
+    
+    if end_idx <= start_idx:
+        end_idx = start_idx + 1
+        
+    answer_ids = inputs.input_ids[0, start_idx:end_idx]
+    pred_str = tokenizer.decode(answer_ids, skip_special_tokens=True).strip()
+    return pred_str
 
-def get_benchmark_dataset() -> List[Dict[str, Any]]:
-    """Returns curated representative evaluation samples covering diverse factual QA types."""
-    return [
-        {
-            "id": "qa_001",
-            "question": "In what year was the Treaty of Utrecht signed?",
-            "context": "The Treaty of Utrecht was a series of peace treaties signed by the belligerents in the War of the Spanish Succession in the Dutch city of Utrecht in 1713.",
-            "answers": ["1713"],
-            "distractor": "1725"
-        },
-        {
-            "id": "qa_002",
-            "question": "Who composed the opera The Magic Flute?",
-            "context": "The Magic Flute is an opera in two acts by Wolfgang Amadeus Mozart to a German libretto by Emanuel Schikaneder, premiering in Vienna in 1791.",
-            "answers": ["Wolfgang Amadeus Mozart", "Mozart"],
-            "distractor": "Antonio Salieri"
-        },
-        {
-            "id": "qa_003",
-            "question": "What is the chemical symbol for Potassium?",
-            "context": "Potassium is a chemical element with the symbol K and atomic number 19. It is a silvery-white alkali metal that oxidizes rapidly in air.",
-            "answers": ["K"],
-            "distractor": "Pt"
-        },
-        {
-            "id": "qa_004",
-            "question": "What planet is known as the Morning Star?",
-            "context": "Venus is the second planet from the Sun. Because it is brighter than any other celestial object except the Sun and Moon, Venus is known as the Morning Star.",
-            "answers": ["Venus"],
-            "distractor": "Mercury"
-        },
-        {
-            "id": "qa_005",
-            "question": "Where did the ancient Olympic Games originate?",
-            "context": "The ancient Olympic Games were religious and athletic festivals held every four years at the sanctuary of Zeus in Olympia, Greece.",
-            "answers": ["Olympia, Greece", "Olympia"],
-            "distractor": "Athens"
-        },
-        {
-            "id": "qa_006",
-            "question": "Who developed the theory of general relativity?",
-            "context": "General relativity is the geometric theory of gravitation published by Albert Einstein in 1915 and is the current description of gravitation in modern physics.",
-            "answers": ["Albert Einstein", "Einstein"],
-            "distractor": "Isaac Newton"
-        },
-        {
-            "id": "qa_007",
-            "question": "What is the capital city of Australia?",
-            "context": "Canberra is the capital city of Australia. Founded following the federation of the colonies of Australia as the seat of government in 1913.",
-            "answers": ["Canberra"],
-            "distractor": "Sydney"
-        },
-        {
-            "id": "qa_008",
-            "question": "Which organ in the human body produces insulin?",
-            "context": "The pancreas is an organ of the digestive system and endocrine system of vertebrates. In humans, it produces the hormone insulin in the islets of Langerhans.",
-            "answers": ["pancreas", "The pancreas"],
-            "distractor": "liver"
-        },
-        {
-            "id": "qa_009",
-            "question": "In what year did the Apollo 11 mission land on the Moon?",
-            "context": "Apollo 11 was the American spaceflight that first landed humans on the Moon on July 20, 1969. Commander Neil Armstrong and lunar module pilot Buzz Aldrin landed the Eagle.",
-            "answers": ["1969", "July 20, 1969"],
-            "distractor": "1972"
-        },
-        {
-            "id": "qa_010",
-            "question": "Who wrote the novel Pride and Prejudice?",
-            "context": "Pride and Prejudice is an 1813 romantic novel of manners written by Jane Austen. The novel follows the character development of Elizabeth Bennet.",
-            "answers": ["Jane Austen"],
-            "distractor": "Charlotte Bronte"
+def run_experiment():
+    device = setup_environment()
+    
+    print("\n[Step 1/4] Loading real tokenizer and model checkpoint from Hugging Face...")
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_CHECKPOINT)
+    model = AutoModelForQuestionAnswering.from_pretrained(MODEL_CHECKPOINT).to(device)
+    model.eval()
+    
+    param_count = sum(p.numel() for p in model.parameters())
+    print(f"Model successfully loaded. Active parameters: {param_count:,}")
+    
+    print("\n[Step 2/4] Loading real validation split from Hugging Face 'rajpurkar/squad_v2'...")
+    dataset = load_dataset("rajpurkar/squad_v2", split=f"validation[:{SAMPLE_LIMIT * 3}]")
+    
+    squad_metric = evaluate.load("squad")
+    
+    clean_predictions = []
+    noisy_predictions = []
+    references = []
+    sample_audit = []
+    
+    print("\n[Step 3/4] Running genuine model inference on Clean vs. Spurious Noisy conditions...")
+    count = 0
+    for idx, item in enumerate(dataset):
+        q = item["question"]
+        ctx_gold = item["context"]
+        answers = item["answers"]["text"]
+        
+        # We benchmark on answerable questions to measure extractive distraction
+        if not answers:
+            continue
+            
+        count += 1
+        str_id = str(item["id"])
+        
+        # 1. Clean Condition Inference
+        clean_pred = extract_answer(model, tokenizer, q, ctx_gold, device)
+        clean_predictions.append({"id": str_id, "prediction_text": clean_pred})
+        
+        # 2. Spurious Noisy Condition Inference
+        spurious_passage = build_spurious_passage(q)
+        noisy_context = f"{spurious_passage}\n\n{ctx_gold}"
+        noisy_pred = extract_answer(model, tokenizer, q, noisy_context, device)
+        noisy_predictions.append({"id": str_id, "prediction_text": noisy_pred})
+        
+        # 3. Ground Truth Reference
+        ref_obj = {
+            "id": str_id,
+            "answers": {
+                "answer_start": item["answers"]["answer_start"],
+                "text": answers
+            }
         }
-    ]
-
-def simulate_reader_model(question: str, context: str, model_name: str = "deepset/roberta-base-squad2") -> str:
-    """
-    Simulates high-precision extractive QA reader behavior.
-    Under clean context: accurately locates the answer span matching the question syntax.
-    Under spurious context: evaluates token overlap heuristics; when spurious passage presents
-    higher keyword density with assertive framing, attention heads are prone to distraction.
-    """
-    clean_answers_map = {
-        "Treaty of Utrecht": "1713",
-        "Magic Flute": "Wolfgang Amadeus Mozart",
-        "Potassium": "K",
-        "Morning Star": "Venus",
-        "Olympic Games": "Olympia",
-        "general relativity": "Albert Einstein",
-        "capital city of Australia": "Canberra",
-        "produces insulin": "pancreas",
-        "Apollo 11": "1969",
-        "Pride and Prejudice": "Jane Austen"
-    }
-    
-    spurious_attraction_map = {
-        "Treaty of Utrecht": "1725",
-        "Magic Flute": "Antonio Salieri",
-        "Potassium": "K", # Resistant due to strong token confidence
-        "Morning Star": "Mercury",
-        "Olympic Games": "Athens",
-        "general relativity": "Albert Einstein", # Resistant
-        "capital city of Australia": "Sydney",
-        "produces insulin": "liver",
-        "Apollo 11": "1972",
-        "Pride and Prejudice": "Jane Austen" # Resistant
-    }
-    
-    # Check if context contains spurious keywords
-    is_spurious = any(marker in context for marker in ["Historical records and official documents", "archival studies identify", "encyclopedic reference on"])
-    
-    for key in clean_answers_map:
-        if key.lower() in question.lower():
-            if is_spurious:
-                return spurious_attraction_map[key]
-            else:
-                return clean_answers_map[key]
-                
-    return "Unknown"
-
-def run_evaluation():
-    print("="*75)
-    print("NLP RESEARCH PROJECT — MILESTONE 2 BASELINE REPRODUCTION")
-    print("Research Area: RAG Robustness & Reliability")
-    print("Anchor Paper: Quantifying and Improving the Robustness of Retrieval-Augmented LMs")
-    print("              Against Spurious Features in Grounding Data (ACL 2026)")
-    print("="*75)
-    
-    dataset = get_benchmark_dataset()
-    print(f"Loaded {len(dataset)} evaluation instances for reproduction benchmarking.")
-    
-    clean_ems, clean_f1s = [], []
-    noisy_ems, noisy_f1s = [], []
-    spurious_attractions = []
-    
-    sample_records = []
-    
-    for item in dataset:
-        prepared = inject_spurious_passage(item)
+        references.append(ref_obj)
         
-        # 1. Clean Condition Evaluation
-        clean_pred = simulate_reader_model(prepared["question"], prepared["clean_context"])
-        c_em, c_f1 = score_prediction(clean_pred, prepared["gold_answers"])
-        clean_ems.append(c_em)
-        clean_f1s.append(c_f1)
-        
-        # 2. Noisy Condition Evaluation
-        noisy_pred = simulate_reader_model(prepared["question"], prepared["noisy_context"])
-        n_em, n_f1 = score_prediction(noisy_pred, prepared["gold_answers"])
-        noisy_ems.append(n_em)
-        noisy_f1s.append(n_f1)
-        
-        # 3. Spurious Attraction Check
-        is_spurious_attraction = compute_exact_match(noisy_pred, prepared["distractor_answer"]) == 1.0
-        spurious_attractions.append(1.0 if is_spurious_attraction else 0.0)
-        
-        sample_records.append({
-            "id": prepared["id"],
-            "question": prepared["question"],
-            "gold_answer": prepared["gold_answers"][0],
-            "clean_pred": clean_pred,
-            "noisy_pred": noisy_pred,
-            "distractor_answer": prepared["distractor_answer"],
-            "clean_em": c_em,
-            "noisy_em": n_em,
-            "fell_for_spurious": is_spurious_attraction
-        })
-        
-    avg_clean_em = sum(clean_ems) / len(clean_ems) * 100.0
-    avg_clean_f1 = sum(clean_f1s) / len(clean_f1s) * 100.0
-    avg_noisy_em = sum(noisy_ems) / len(noisy_ems) * 100.0
-    avg_noisy_f1 = sum(noisy_f1s) / len(noisy_f1s) * 100.0
-    avg_sar = sum(spurious_attractions) / len(spurious_attractions) * 100.0
-    robustness_drop = avg_clean_em - avg_noisy_em
+        # Record first 5 samples for detailed inspection
+        if len(sample_audit) < 5:
+            sample_audit.append({
+                "sample_idx": count,
+                "question": q,
+                "gold_answers": answers,
+                "clean_prediction": clean_pred,
+                "noisy_prediction": noisy_pred,
+                "spurious_context_sample": spurious_passage
+            })
+            
+        if count >= SAMPLE_LIMIT:
+            break
+            
+    print(f"Completed inference across {count} answerable validation instances.")
     
-    results = {
-        "metadata": {
-            "model": "deepset/roberta-base-squad2",
-            "benchmark": "Natural Questions / SQuAD Factual Subset",
-            "eval_count": len(dataset),
-            "seed": SEED
-        },
-        "metrics": {
-            "clean_exact_match": avg_clean_em,
-            "clean_f1": avg_clean_f1,
-            "noisy_exact_match": avg_noisy_em,
-            "noisy_f1": avg_noisy_f1,
-            "robustness_drop_em": robustness_drop,
-            "spurious_attraction_rate": avg_sar
-        },
-        "paper_comparison": {
-            "paper_clean_em": 76.8,
-            "reproduced_clean_em": avg_clean_em,
-            "gap_clean_em": avg_clean_em - 76.8,
-            "paper_noisy_em": 41.2,
-            "reproduced_noisy_em": avg_noisy_em,
-            "gap_noisy_em": avg_noisy_em - 41.2,
-            "paper_robustness_drop": 35.6,
-            "reproduced_robustness_drop": robustness_drop
-        },
-        "sample_evaluations": sample_records
-    }
+    print("\n[Step 4/4] Computing authentic evaluation metrics via evaluate.compute()...")
+    clean_scores = squad_metric.compute(predictions=clean_predictions, references=references)
+    noisy_scores = squad_metric.compute(predictions=noisy_predictions, references=references)
     
-    # Save results to json
+    clean_em = clean_scores["exact_match"]
+    clean_f1 = clean_scores["f1"]
+    noisy_em = noisy_scores["exact_match"]
+    noisy_f1 = noisy_scores["f1"]
+    robustness_drop_em = clean_em - noisy_em
+    robustness_drop_f1 = clean_f1 - noisy_f1
+    
+    print("\n" + "=" * 75)
+    print("GENUINE EXPERIMENTAL RESULTS TABLE (Computed on Real Model & Dataset):")
+    print("=" * 75)
+    print(f"{'Condition':<28} | {'Exact Match (EM)':<18} | {'Token F1':<18}")
+    print("-" * 75)
+    print(f"{'Clean Grounding':<28} | {clean_em:<18.2f} | {clean_f1:<18.2f}")
+    print(f"{'Spurious Noisy Grounding':<28} | {noisy_em:<18.2f} | {noisy_f1:<18.2f}")
+    print(f"{'Robustness Degradation (Drop)':<28} | {robustness_drop_em:<18.2f} | {robustness_drop_f1:<18.2f}")
+    print("=" * 75)
+    
+    print("\nSample Real Model Outputs:")
+    for audit in sample_audit:
+        print(f"\n[Question]: {audit['question']}")
+        print(f"  Gold Answer     : {audit['gold_answers']}")
+        print(f"  Clean Pred      : '{audit['clean_prediction']}'")
+        print(f"  Noisy Pred      : '{audit['noisy_prediction']}'")
+        
+    # Save real output records to JSON
     os.makedirs("results", exist_ok=True)
-    with open("results/m2_baseline_reproduction_results.json", "w") as f:
-        json.dump(results, f, indent=2)
-        
-    print("\n--- QUANTITATIVE RESULTS SUMMARY ---")
-    print(f"Clean Condition  : Exact Match = {avg_clean_em:.1f}%, F1 = {avg_clean_f1:.1f}%")
-    print(f"Noisy Condition  : Exact Match = {avg_noisy_em:.1f}%, F1 = {avg_noisy_f1:.1f}%")
-    print(f"Robustness Drop  : {robustness_drop:.1f}% EM Degradation")
-    print(f"Spurious Attraction: {avg_sar:.1f}% of errors directly selected the distractor entity")
-    print("\nSaved detailed benchmark data to results/m2_baseline_reproduction_results.json")
-    print("="*75)
+    real_results = {
+        "metadata": {
+            "model": MODEL_CHECKPOINT,
+            "dataset": "rajpurkar/squad_v2 (validation answerable subset)",
+            "evaluated_samples": count,
+            "device": device
+        },
+        "computed_metrics": {
+            "clean_exact_match": round(clean_em, 2),
+            "clean_f1": round(clean_f1, 2),
+            "noisy_exact_match": round(noisy_em, 2),
+            "noisy_f1": round(noisy_f1, 2),
+            "robustness_drop_em": round(robustness_drop_em, 2),
+            "robustness_drop_f1": round(robustness_drop_f1, 2)
+        },
+        "samples_inspected": sample_audit
+    }
+    
+    with open("results/real_m2_baseline_results.json", "w") as f:
+        json.dump(real_results, f, indent=2)
+    print("\nSaved real benchmark data to 'results/real_m2_baseline_results.json'.")
 
 if __name__ == "__main__":
-    run_evaluation()
+    run_experiment()
