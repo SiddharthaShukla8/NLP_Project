@@ -13,6 +13,12 @@ Requires:
 
 import os
 import sys
+
+# Ensure user site packages are accessible if installed via --user
+site_user = os.path.expanduser('~/Library/Python/3.13/lib/python/site-packages')
+if os.path.exists(site_user) and site_user not in sys.path:
+    sys.path.insert(0, site_user)
+
 import json
 import re
 import string
