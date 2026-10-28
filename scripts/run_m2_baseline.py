@@ -5,20 +5,12 @@ Anchor Paper: "Quantifying and Improving the Robustness of Retrieval-Augmented L
 Author: Siddhartha Shukla
 Repository: https://github.com/SiddharthaShukla8/NLP_Project
 
-Requires:
-  pip install transformers datasets evaluate torch accelerate
-
-# Note: Requires GPU for fast execution, but runs on CPU as fallback (Google Colab T4 recommended).
+Requires: pip install transformers datasets evaluate torch accelerate
+Run on: Google Colab T4 GPU (recommended) or any machine with CUDA
 """
 
 import os
 import sys
-
-# Ensure user site packages are accessible if installed via --user
-site_user = os.path.expanduser('~/Library/Python/3.13/lib/python/site-packages')
-if os.path.exists(site_user) and site_user not in sys.path:
-    sys.path.insert(0, site_user)
-
 import json
 import re
 import string
