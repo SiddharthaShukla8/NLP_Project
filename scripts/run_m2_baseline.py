@@ -28,13 +28,19 @@ MAX_LENGTH = 512
 SAMPLE_LIMIT = 50  # Balanced evaluation size for honest CPU/GPU local run
 
 def setup_environment():
-    device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
+    if torch.cuda.is_available():
+        device = "cuda"
+        print("Running on GPU:", torch.cuda.get_device_name(0))
+    elif torch.backends.mps.is_available():
+        device = "mps"
+        print("Running on Apple Silicon MPS")
+    else:
+        device = "cpu"
+        print("Warning: No GPU detected. Running on CPU — inference will be slow.")
     print("=" * 75)
     print("RAG ROBUSTNESS & RELIABILITY — REAL BASELINE REPRODUCTION")
     print(f"PyTorch Version   : {torch.__version__}")
-    print(f"Execution Device  : {device}")
-    if torch.cuda.is_available():
-        print(f"GPU Hardware Name : {torch.cuda.get_device_name(0)}")
+    print(f"Active Device     : {device}")
     print(f"Target Model      : {MODEL_CHECKPOINT}")
     print("=" * 75)
     return device

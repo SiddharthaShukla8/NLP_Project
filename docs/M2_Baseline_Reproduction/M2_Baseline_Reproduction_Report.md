@@ -68,7 +68,7 @@ In accordance with course guidelines (*"Reproduce a feasible baseline, not neces
 | **Model** | 6 SOTA LLMs (Mistral-7B, Llama-3.1-8B/70B, Qwen, GPT-4o) | `deepset/roberta-base-squad2` (124M parameters) | Llama-3.1-70B requires 140GB+ VRAM; 8B models require 16GB+ with slow inference. `roberta-base-squad2` isolates the exact same attention-based context distraction phenomenon and runs locally/on Colab T4 in seconds. |
 | **Dataset** | SIG Benchmark (Synthetic Spurious Injected Grounding on Wiki & Trivial QA) | `rajpurkar/squad_v2` (validation answerable split from Hugging Face Hub) | SIG requires full proprietary generation scripts and API costs. SQuAD v2.0 provides authentic Wikipedia passages and human-verified factual spans. |
 | **Metric** | SURE Framework metrics: Robustness Ratio (RR), Lose Rate (LR), Win Rate (WR) | Exact Match (EM) and Token F1 via official Hugging Face `evaluate` library | The paper uses LLM-as-a-judge generative evaluation for free-form responses. Encoder QA models extract exact token spans, where EM and F1 are the established standard. We track $\Delta\text{EM} = \text{EM}_{\text{clean}} - \text{EM}_{\text{noisy}}$ to capture the drop. |
-| **Benchmark Size** | Full multi-thousand benchmark split | $N=50$ held-out validated instances | Enables complete, reproducible execution within memory and compute bounds while maintaining clear statistical significance. |
+| **Benchmark Size** | Full multi-thousand benchmark split | $N=50$ held-out validated instances | Enables complete, reproducible execution within available memory and compute bounds. Note that N=50 is a constrained evaluation scope; results are indicative of model behavior rather than statistically significant at conventional thresholds. A larger evaluation (N=500+) on dedicated GPU hardware would be required for publication-grade significance. |
 
 ---
 
@@ -154,6 +154,9 @@ Our real model's performance dropped from **$68.00\%$ EM to $54.00\%$ EM**—an 
 1. **Model Architecture:** The anchor paper evaluates generative decoder LLMs (Llama-3, Mistral) prompted in-context, whereas our baseline uses an extractive encoder (`roberta-base`).
 2. **Context Length & Positioning:** In our testbed, the spurious distractor was prepended immediately prior to the context paragraph, maximizing positional and recency distraction.
 3. **Sample Size:** Our evaluation was run over $N=50$ instances locally to ensure instantaneous, deterministic execution without GPU throttling.
+
+### 6.4 Limitation: Simplified Spurious Injection vs. SURE Framework
+A primary methodological limitation of our feasible reproduction is the operationalization of spurious noise compared to the comprehensive SURE framework proposed in the anchor paper. The authors of the anchor paper establish a rigorous taxonomy comprising five independent dimensions of spurious perturbations: Style, Source, Logic, Format, and Metadata—evaluating each dimension in isolation and measuring granular instance-level transitions via the Robustness Ratio (RR). In contrast, our reproduction utilizes a single, generic assertive carrier sentence prepended uniformly across all test instances. While this design reliably induces query lexical overlap distraction, it conflates multiple potential signals (source authority and surface lexical density) rather than isolating a single dimension from the SURE taxonomy. Consequently, our observed 14.00% EM degradation serves as a coarse empirical approximation of context distraction rather than a faithful reproduction of any individual SURE dimension. In Milestone 3, we address this directly by isolating a specific spurious category (Source Authority artifacts) to conduct a controlled, hypothesis-driven investigation.
 
 ---
 
