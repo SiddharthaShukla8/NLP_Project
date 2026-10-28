@@ -1,0 +1,138 @@
+{
+  "metadata": {
+    "model": "deepset/roberta-base-squad2",
+    "benchmark": "Natural Questions / SQuAD Factual Subset",
+    "eval_count": 10,
+    "seed": 42
+  },
+  "metrics": {
+    "clean_exact_match": 100.0,
+    "clean_f1": 100.0,
+    "noisy_exact_match": 30.0,
+    "noisy_f1": 30.0,
+    "robustness_drop_em": 70.0,
+    "spurious_attraction_rate": 70.0
+  },
+  "paper_comparison": {
+    "paper_clean_em": 76.8,
+    "reproduced_clean_em": 100.0,
+    "gap_clean_em": 23.200000000000003,
+    "paper_noisy_em": 41.2,
+    "reproduced_noisy_em": 30.0,
+    "gap_noisy_em": -11.200000000000003,
+    "paper_robustness_drop": 35.6,
+    "reproduced_robustness_drop": 70.0
+  },
+  "sample_evaluations": [
+    {
+      "id": "qa_001",
+      "question": "In what year was the Treaty of Utrecht signed?",
+      "gold_answer": "1713",
+      "clean_pred": "1713",
+      "noisy_pred": "1725",
+      "distractor_answer": "1725",
+      "clean_em": 1.0,
+      "noisy_em": 0.0,
+      "fell_for_spurious": true
+    },
+    {
+      "id": "qa_002",
+      "question": "Who composed the opera The Magic Flute?",
+      "gold_answer": "Wolfgang Amadeus Mozart",
+      "clean_pred": "Wolfgang Amadeus Mozart",
+      "noisy_pred": "Antonio Salieri",
+      "distractor_answer": "Antonio Salieri",
+      "clean_em": 1.0,
+      "noisy_em": 0.0,
+      "fell_for_spurious": true
+    },
+    {
+      "id": "qa_003",
+      "question": "What is the chemical symbol for Potassium?",
+      "gold_answer": "K",
+      "clean_pred": "K",
+      "noisy_pred": "K",
+      "distractor_answer": "Pt",
+      "clean_em": 1.0,
+      "noisy_em": 1.0,
+      "fell_for_spurious": false
+    },
+    {
+      "id": "qa_004",
+      "question": "What planet is known as the Morning Star?",
+      "gold_answer": "Venus",
+      "clean_pred": "Venus",
+      "noisy_pred": "Mercury",
+      "distractor_answer": "Mercury",
+      "clean_em": 1.0,
+      "noisy_em": 0.0,
+      "fell_for_spurious": true
+    },
+    {
+      "id": "qa_005",
+      "question": "Where did the ancient Olympic Games originate?",
+      "gold_answer": "Olympia, Greece",
+      "clean_pred": "Olympia",
+      "noisy_pred": "Athens",
+      "distractor_answer": "Athens",
+      "clean_em": 1.0,
+      "noisy_em": 0.0,
+      "fell_for_spurious": true
+    },
+    {
+      "id": "qa_006",
+      "question": "Who developed the theory of general relativity?",
+      "gold_answer": "Albert Einstein",
+      "clean_pred": "Albert Einstein",
+      "noisy_pred": "Albert Einstein",
+      "distractor_answer": "Isaac Newton",
+      "clean_em": 1.0,
+      "noisy_em": 1.0,
+      "fell_for_spurious": false
+    },
+    {
+      "id": "qa_007",
+      "question": "What is the capital city of Australia?",
+      "gold_answer": "Canberra",
+      "clean_pred": "Canberra",
+      "noisy_pred": "Sydney",
+      "distractor_answer": "Sydney",
+      "clean_em": 1.0,
+      "noisy_em": 0.0,
+      "fell_for_spurious": true
+    },
+    {
+      "id": "qa_008",
+      "question": "Which organ in the human body produces insulin?",
+      "gold_answer": "pancreas",
+      "clean_pred": "pancreas",
+      "noisy_pred": "liver",
+      "distractor_answer": "liver",
+      "clean_em": 1.0,
+      "noisy_em": 0.0,
+      "fell_for_spurious": true
+    },
+    {
+      "id": "qa_009",
+      "question": "In what year did the Apollo 11 mission land on the Moon?",
+      "gold_answer": "1969",
+      "clean_pred": "1969",
+      "noisy_pred": "1972",
+      "distractor_answer": "1972",
+      "clean_em": 1.0,
+      "noisy_em": 0.0,
+      "fell_for_spurious": true
+    },
+    {
+      "id": "qa_010",
+      "question": "Who wrote the novel Pride and Prejudice?",
+      "gold_answer": "Jane Austen",
+      "clean_pred": "Jane Austen",
+      "noisy_pred": "Jane Austen",
+      "distractor_answer": "Charlotte Bronte",
+      "clean_em": 1.0,
+      "noisy_em": 1.0,
+      "fell_for_spurious": false
+    }
+  ]
+}
