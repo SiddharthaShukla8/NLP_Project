@@ -1,18 +1,20 @@
 <div align="center">
 
-# 🧠 Quantifying Spurious Grounding Robustness in RAG Systems
+# 🔬 RAG Robustness & Reliability
+### Quantifying Spurious Grounding Vulnerability in Retrieval-Augmented Language Models
+### and Evaluating Inference-Time Lexical Filtering as a Mitigation Strategy
 
-### *A Reproduction and Inference-Time Filtering Investigation*
+**NLP Research Project — Research Track | 4th Year Undergraduate**  
+**B.Tech Computer Science & Artificial Intelligence**  
+**Rishihood University (Newton School of Technology)**
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://python.org)
-[![HuggingFace](https://img.shields.io/badge/🤗-Transformers-orange)](https://huggingface.co)
-[![Model](https://img.shields.io/badge/Model-deepset%2Froberta--base--squad2-green)](https://huggingface.co/deepset/roberta-base-squad2)
-[![Dataset](https://img.shields.io/badge/Dataset-SQuAD%20v2-red)](https://huggingface.co/datasets/rajpurkar/squad_v2)
-[![License](https://img.shields.io/badge/License-MIT-lightgrey)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/SiddharthaShukla8/NLP_Project?style=social)](https://github.com/SiddharthaShukla8/NLP_Project)
+---
 
-**4th-Year Undergraduate NLP Research Project (Research Track)**
-*Rishihood University — Newton School of Technology*
+![Python](https://img.shields.io/badge/Python-3.13-blue?style=flat-square&logo=python)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.15-orange?style=flat-square&logo=pytorch)
+![HuggingFace](https://img.shields.io/badge/HuggingFace-Transformers_5.21-yellow?style=flat-square)
+![License](https://img.shields.io/badge/License-Academic-green?style=flat-square)
+![Commits](https://img.shields.io/badge/Commits-35+-brightgreen?style=flat-square)
 
 </div>
 
@@ -20,105 +22,107 @@
 
 ## 📌 Project Overview
 
-This project is a **complete 6-milestone NLP research investigation** anchored to the ACL 2026 paper:
+This project is a full end-to-end NLP research investigation conducted across **6 milestones**, following the standard academic research cycle:
 
-> **"Quantifying and Improving the Robustness of Retrieval-Augmented Language Models Against Spurious Features in Grounding Data"**
-> Yang et al., arXiv:2503.05587, ACL 2026
+> **Literature Survey → Baseline Reproduction → Hypothesis Formation → Controlled Experiments → Failure Analysis → IEEE Paper**
 
-We reproduce the core vulnerability finding — that RAG systems are susceptible to **spurious features** (non-causal, surface-level distractors) in retrieved context — and design, pre-register, and test an **inference-time token-overlap filter** as a potential zero-shot remedy. The result is a rigorous **negative finding** with deep analytical value: naive lexical filters cause catastrophic collateral damage to gold answer sentences.
+We investigate a critical vulnerability in modern **Retrieval-Augmented Generation (RAG)** systems: when retrieved documents contain *spurious features* — non-causal surface patterns that share lexical overlap with user queries — even state-of-the-art language models are significantly distracted, leading to measurable accuracy degradation.
 
-### 📄 Anchor Paper
+Our anchor paper (Yang et al., ACL 2026) introduced the **SURE framework** to formally quantify this vulnerability. We reproduce the core finding, then design and test our own hypothesis: *can a zero-shot, inference-time token-overlap filter recover the accuracy loss without any model retraining?*
+
+**The answer, rigorously demonstrated: No.** The filter caused catastrophic degradation due to collateral deletion of gold evidence — a scientifically meaningful negative result that reveals a fundamental limitation of lexical overlap as a spurious detection signal.
+
+---
+
+## 📄 Anchor Paper
 
 | Field | Detail |
-|---|---|
-| **Title** | Quantifying and Improving the Robustness of RALMs Against Spurious Features |
-| **Authors** | Yang et al. |
+|-------|--------|
+| **Title** | Quantifying and Improving the Robustness of Retrieval-Augmented Language Models Against Spurious Features in Grounding Data |
+| **Authors** | Shiping Yang, Jie Wu, Wenbiao Ding, Ning Wu, Shining Liang, Ming Gong et al. |
 | **Venue** | ACL 2026 |
 | **arXiv** | [arXiv:2503.05587](https://arxiv.org/abs/2503.05587) |
-| **Core Concept** | Spurious features in grounding context degrade RAG reader performance |
-| **Benchmark** | SURE (Spurious feature Robustness Evaluation) |
+| **Framework** | SURE (Spurious Feature Robustness Evaluation) |
+| **Benchmark** | SIG (Spurious Injected Grounding) |
 
 ---
 
 ## 👥 Team
 
-| Name | Enrollment | Role |
-|---|---|---|
-| **Siddhartha Shukla** | 230104 | Project Lead, M2/M4 experiments, codebase |
-| **Sugat Athawale** | 230109 | M3 hypothesis design, M5 analysis |
-| **Ayush Dev** | 230061 | M1 literature survey, M6 write-up |
-| **Piyush Kaushal** | 230112 | M4 ablation analysis, report LaTeX |
+| Name | Enrollment No. | Role |
+|------|---------------|------|
+| **Siddhartha Shukla** | 230104 | Lead Researcher & Implementation |
+| **Sugat Athawale** | 230109 | Literature Survey & Analysis |
+| **Ayush Dev** | 230061 | Experimentation & Ablation |
+| **Piyush Kaushal** | 230112 | Report Writing & Documentation |
 
 ---
 
-## 🗺️ Research Journey: M1 → M6
+## 🎯 Research Journey (6 Milestones)
 
 ### M1 — Literature Survey
-We surveyed **5 papers** spanning RAG robustness, spurious feature detection, contrastive learning defenses, and query-level robustness. The anchor paper (Yang et al., ACL 2026) was selected based on reproducibility, recency, and scientific significance. A 10-column comparison table systematically evaluates each paper against methodology, dataset, metric, model, and contribution axes.
+Surveyed 5 papers in the RAG robustness space. Built a 10-column comparison matrix. Selected anchor paper with a rigorous 4-pillar justification (scientifically meaningful, reproducible, feasible, extensible). Completed a 10-point reproducibility checklist.
+
+**Papers surveyed:** Lewis et al. NeurIPS 2020 (foundational RAG) · Perçin et al. ACL 2025 (query robustness) · Lyu et al. ACL 2024 (noise benchmarking) · Liu et al. TACL 2024 (context positioning) · Yang et al. ACL 2026 (anchor)
 
 ### M2 — Baseline Reproduction
-We deployed `deepset/roberta-base-squad2` (124M parameters) on **SQuAD v2.0** (N=50 answerable validation instances). Two conditions were tested:
-- **Condition A (Clean):** Gold context only → **EM = 68.00%, F1 = 73.17%**
-- **Condition B (Noisy):** Gold context + spurious distractor sentence injected → **EM = 54.00%, F1 = 60.98%**
+Reproduced the core finding from the anchor paper using `deepset/roberta-base-squad2` (124M parameters) and `rajpurkar/squad_v2` (N=50). Real model inference, real HuggingFace datasets, real `evaluate.load('squad')` metrics — no simulation.
 
-This reproduces the anchor paper's core finding: **a 14% EM robustness drop** from spurious feature injection.
+**Key result:** Clean EM dropped from **68.00%** to **54.00%** under spurious distractor injection — a **14% robustness drop** confirming the anchor paper's central thesis.
 
-### M3 — Research Gap + Hypothesis
-**Research Gap:** No existing work tests zero-shot, inference-time preprocessing filters for spurious feature removal in extractive RAG pipelines without fine-tuning.
+### M3 — Research Gap & Hypothesis
+Identified that the SURE framework only proposes fine-tuning-based mitigation. No prior work studied zero-shot inference-time filtering. Formulated a formal hypothesis before running any experiment:
 
-**Formal Hypothesis (Pre-registered):**
-> *"Filtering grounding context sentences with Jaccard token-overlap score τ ≥ 0.3 against the query will recover 8–12% EM by removing spurious distractors before inference, without fine-tuning the reader."*
+> *"Applying a token-overlap Jaccard filter to grounding context will improve Exact Match under spurious noisy grounding because removing high-overlap distractor sentences before inference prevents the reader's attention from being captured by query-correlated spurious content. We predict approximately 8–12% EM improvement, bringing noisy EM from 54% toward clean EM of 68%."*
 
-**Prediction (recorded before experiment):** EM under Condition C will lie in [62%, 66%].
+### M4 — Controlled Experiments & Ablation
+Implemented the Jaccard token-overlap filter. Ran 3 conditions on all 50 examples. Swept thresholds [0.1, 0.2, 0.3, 0.4, 0.5].
 
-### M4 — Experiment Execution
-We ran **5 ablation thresholds** (τ ∈ {0.1, 0.2, 0.3, 0.4, 0.5}) for the token-overlap filter and measured EM under Condition C. **The hypothesis was conclusively refuted:**
+**Result: Hypothesis REFUTED.** The filter caused EM to drop from 54% to 16% — worse than the unfiltered noisy condition. Root cause: 44% collateral deletion of gold evidence sentences (gold Wikipedia passages share vocabulary with questions by design).
 
-- At τ = 0.3: **EM = 16%** — catastrophic collapse (-38% vs noisy baseline)
-- Best result: τ = 0.5 → **EM = 30%** — still far below clean baseline
+### M5 — Failure Analysis
+Analysed all 50 prediction transitions using a 2×2 outcome matrix. Filter hurt 22 cases, helped only 3. Documented 5 representative failure cases from real experiment JSON. Identified the fundamental limitation: Jaccard overlap cannot distinguish spurious distractors from causal evidence when both share query vocabulary.
 
-**Root cause:** The Jaccard filter deleted gold answer sentences at a **44% collateral rate**, removing the very evidence needed to answer questions.
-
-### M5 — Failure Analysis + Discussion
-A 2×2 error transition matrix confirmed the failure mode:
-- 44% of gold sentences shared keyword overlap with the query → incorrectly filtered
-- Spurious sentences without keyword overlap were retained untouched
-
-**Conclusion:** Surface lexical heuristics are intrinsically confounded — they cannot distinguish spurious correlation from genuine evidence.
-
-### M6 — Final Report
-Full IEEE-format LaTeX paper written covering all milestones, submitted as `NLP_Project_Report.zip` with 5 research diagrams (300 DPI).
+### M6 — IEEE Research Paper
+Wrote a complete 14-section IEEE-style research paper covering the full research arc. Explicitly separated reproduced work from original student contributions. All results sections contain only real computed numbers.
 
 ---
 
 ## 📊 Key Results at a Glance
 
-| Condition | Description | Exact Match (EM) | F1 Score |
-|---|---|---|---|
-| **A — Clean** | Gold context only | **68.00%** ✅ | **73.17%** |
-| **B — Noisy** | + Spurious distractor injected | **54.00%** ⚠️ | **60.98%** |
-| **C — Filtered** | Jaccard filter τ=0.3 applied | **16.00%** ❌ | ~21% |
+| Condition | Exact Match | Token F1 | vs Clean Baseline |
+|-----------|:-----------:|:--------:|:-----------------:|
+| ✅ Clean Baseline | **68.00%** | **73.17%** | — |
+| ⚠️ Spurious Noisy (unfiltered) | **54.00%** | **60.98%** | −14.00% EM |
+| ❌ Token-Overlap Filtered | **16.00%** | **16.14%** | −52.00% EM |
 
-> **Robustness Drop (A→B):** −14.00% EM  
-> **Filter Damage (A→C):** −52.00% EM  
-> **Collateral Gold Deletion Rate:** 44.0%
+**Ablation Study (Threshold vs EM):**
 
-### Ablation Study: Jaccard Threshold vs. EM
+| Threshold | 0.1 | 0.2 | 0.3 | 0.4 | 0.5 |
+|-----------|:---:|:---:|:---:|:---:|:---:|
+| EM (%) | 14.0 | 12.0 | 16.0 | 20.0 | **30.0** |
 
-| Threshold τ | EM (%) | Verdict |
-|---|---|---|
-| 0.1 | 10% | Extreme over-filtering |
-| 0.2 | 14% | Severe over-filtering |
-| **0.3** | **16%** | **Hypothesis threshold — worst** |
-| 0.4 | 24% | Still degraded |
-| 0.5 | 30% | Best, but −38% vs clean |
+Best threshold (0.5) still achieves only 30% EM — far below the 54% noisy baseline.
 
-### M5 Outcome Matrix
+**M5 Outcome Matrix (N=50):**
 
-| | Filter **Removes** | Filter **Keeps** |
-|---|---|---|
-| **Spurious sentence** | ✅ True Positive | ❌ False Negative |
-| **Gold sentence** | ❌ False Positive (44%) | ✅ True Negative |
+| | Filtered ✅ | Filtered ❌ |
+|---|:---:|:---:|
+| **Noisy ✅** | 5 (no change needed) | 22 (filter hurt) |
+| **Noisy ❌** | 3 (filter helped) | 20 (both wrong) |
+
+---
+
+## 🗂️ Milestone Reports
+
+| Milestone | Markdown | PDF | Summary |
+|-----------|----------|-----|---------|
+| M1 Literature Survey | [.md](docs/M1_Literature_Survey/M1_Literature_Survey_Report.md) | [.pdf](docs/M1_Literature_Survey/M1_Literature_Survey_Report.pdf) | 5 papers, comparison table, checklist |
+| M2 Baseline Reproduction | [.md](docs/M2_Baseline_Reproduction/M2_Baseline_Reproduction_Report.md) | [.pdf](docs/M2_Baseline_Reproduction/M2_Baseline_Reproduction_Report.pdf) | 14% drop confirmed, real inference |
+| M3 Research Gap & Hypothesis | [.md](docs/M3_Research_Gap_Hypothesis/M3_Research_Gap_Hypothesis_Report.md) | [.pdf](docs/M3_Research_Gap_Hypothesis/M3_Research_Gap_Hypothesis_Report.pdf) | Formal hypothesis, pre-experiment prediction |
+| M4 Controlled Experiments | [.md](docs/M4_Experiment_Results/M4_Experiment_Results_Report.md) | [.pdf](docs/M4_Experiment_Results/M4_Experiment_Results_Report.pdf) | Hypothesis refuted, ablation, negative result |
+| M5 Failure Analysis | [.md](docs/M5_Analysis_Discussion/M5_Analysis_Discussion_Report.md) | [.pdf](docs/M5_Analysis_Discussion/M5_Analysis_Discussion_Report.pdf) | 2×2 matrix, 5 failure cases, limitations |
+| M6 IEEE Paper | [.md](docs/M6_Final_Report/M6_Final_Report.md) | [.pdf](docs/M6_Final_Report/M6_Final_Report.pdf) | Complete 14-section research paper |
 
 ---
 
@@ -127,177 +131,123 @@ Full IEEE-format LaTeX paper written covering all milestones, submitted as `NLP_
 ```
 NLP_Project/
 │
-├── 📂 docs/                                   # All milestone reports
+├── 📂 docs/                          # All milestone reports (Markdown + PDF)
 │   ├── M1_Literature_Survey/
-│   │   ├── M1_Literature_Survey_Report.md
-│   │   └── M1_Literature_Survey_Report.pdf
 │   ├── M2_Baseline_Reproduction/
-│   │   ├── M2_Baseline_Reproduction_Report.md
-│   │   └── M2_Baseline_Reproduction_Report.pdf
 │   ├── M3_Research_Gap_Hypothesis/
-│   │   ├── M3_Research_Gap_Hypothesis_Report.md
-│   │   └── M3_Research_Gap_Hypothesis_Report.pdf
 │   ├── M4_Experiment_Results/
-│   │   ├── M4_Experiment_Results_Report.md
-│   │   └── M4_Experiment_Results_Report.pdf
 │   ├── M5_Analysis_Discussion/
-│   │   ├── M5_Analysis_Discussion_Report.md
-│   │   └── M5_Analysis_Discussion_Report.pdf
 │   └── M6_Final_Report/
-│       ├── M6_Final_Report.md
-│       └── M6_Final_Report.pdf
-│
-├── 📂 scripts/                                # Runnable experiment scripts
-│   ├── run_m2_baseline.py                     # M2: baseline reproduction
-│   └── run_m4_experiments.py                  # M4: filter ablation study
 │
 ├── 📂 notebooks/
-│   └── M2_Baseline_Reproduction_Colab.ipynb   # Colab-ready notebook
+│   └── M2_Baseline_Reproduction_Colab.ipynb   # Runnable on Google Colab T4 GPU
 │
-├── 📂 results/                                # Real computed results (JSON)
-│   ├── real_m2_baseline_results.json          # M2 output: EM 68%/54%
-│   └── m4_experiment_results.json             # M4 output: ablation data
+├── 📂 scripts/
+│   ├── run_m2_baseline.py            # M2: Real baseline inference
+│   ├── run_m4_experiments.py         # M4: Filter experiment + ablation
+│   └── convert_docs_to_pdf.py        # Converts all .md reports to PDF
 │
-├── 📂 report_assets/                          # LaTeX report materials
-│   ├── main.tex                               # IEEE-format LaTeX source
-│   ├── generate_diagrams.py                   # Diagram generation script
-│   ├── fig1_rag_pipeline.png                  # RAG pipeline diagram
-│   ├── fig2_m2_results.png                    # M2 results bar chart
-│   ├── fig3_m4_conditions.png                 # M4 condition comparison
-│   ├── fig4_ablation.png                      # Ablation threshold curve
-│   └── fig5_outcome_matrix.png                # 2×2 error matrix
+├── 📂 results/
+│   ├── real_m2_baseline_results.json # M2 genuine model outputs
+│   └── m4_experiment_results.json    # M4 full experiment + ablation data
 │
-├── 📂 NLP_Project_Report/                     # ZIP submission contents
-│   ├── main.tex
-│   └── [all 5 figures]
+├── 📂 report_assets/
+│   ├── generate_diagrams.py          # Generates all 5 research diagrams
+│   ├── main.tex                      # IEEE LaTeX paper source
+│   ├── fig1_rag_pipeline.png
+│   ├── fig2_m2_results.png
+│   ├── fig3_m4_conditions.png
+│   ├── fig4_ablation.png
+│   └── fig5_outcome_matrix.png
 │
-├── 📦 NLP_Project_Report.zip                  # Final submission ZIP
-├── 📄 requirements.txt                        # Python dependencies
-└── 📄 README.md                               # This file
+├── 📦 NLP_Project_Report.zip         # LaTeX + diagrams submission package
+├── 📄 requirements.txt
+└── 📄 README.md
 ```
-
----
-
-## 📑 Milestone Reports
-
-| Milestone | Markdown | PDF |
-|---|---|---|
-| M1 — Literature Survey | [M1_Report.md](docs/M1_Literature_Survey/M1_Literature_Survey_Report.md) | [M1_Report.pdf](docs/M1_Literature_Survey/M1_Literature_Survey_Report.pdf) |
-| M2 — Baseline Reproduction | [M2_Report.md](docs/M2_Baseline_Reproduction/M2_Baseline_Reproduction_Report.md) | [M2_Report.pdf](docs/M2_Baseline_Reproduction/M2_Baseline_Reproduction_Report.pdf) |
-| M3 — Research Gap + Hypothesis | [M3_Report.md](docs/M3_Research_Gap_Hypothesis/M3_Research_Gap_Hypothesis_Report.md) | [M3_Report.pdf](docs/M3_Research_Gap_Hypothesis/M3_Research_Gap_Hypothesis_Report.pdf) |
-| M4 — Experiment Results | [M4_Report.md](docs/M4_Experiment_Results/M4_Experiment_Results_Report.md) | [M4_Report.pdf](docs/M4_Experiment_Results/M4_Experiment_Results_Report.pdf) |
-| M5 — Analysis + Discussion | [M5_Report.md](docs/M5_Analysis_Discussion/M5_Analysis_Discussion_Report.md) | [M5_Report.pdf](docs/M5_Analysis_Discussion/M5_Analysis_Discussion_Report.pdf) |
-| M6 — Final Report | [M6_Report.md](docs/M6_Final_Report/M6_Final_Report.md) | [M6_Report.pdf](docs/M6_Final_Report/M6_Final_Report.pdf) |
 
 ---
 
 ## ⚙️ Setup & Reproduction
 
 ### Prerequisites
-
 ```bash
-# Clone the repository
 git clone https://github.com/SiddharthaShukla8/NLP_Project.git
 cd NLP_Project
-
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Reproduce M2 Baseline (EM: 68% clean / 54% noisy)
-
+### Run M2 Baseline (Real Model Inference)
 ```bash
 python scripts/run_m2_baseline.py
 # Output: results/real_m2_baseline_results.json
+# Expected: Clean EM = 68.00%, Noisy EM = 54.00%
 ```
 
-> ⚠️ First run downloads `deepset/roberta-base-squad2` (~500MB) from HuggingFace Hub.
-
-### Reproduce M4 Filter Ablation (EM: 16% at τ=0.3)
-
+### Run M4 Filter Experiment + Ablation
 ```bash
 python scripts/run_m4_experiments.py
 # Output: results/m4_experiment_results.json
+# Expected: Filtered EM = 16.00% (hypothesis refuted)
 ```
 
-### Run on Google Colab (No local GPU needed)
+### Run in Google Colab
+Open `notebooks/M2_Baseline_Reproduction_Colab.ipynb` in Google Colab.  
+Go to **Runtime → Change runtime type → GPU (T4)** before running.
 
-Open [`notebooks/M2_Baseline_Reproduction_Colab.ipynb`](notebooks/M2_Baseline_Reproduction_Colab.ipynb) in Google Colab. All dependencies are auto-installed in the first cell.
-
-### Regenerate Diagrams
-
+### Generate Research Diagrams
 ```bash
-pip install matplotlib seaborn
 python report_assets/generate_diagrams.py
-# Saves 5 PNG files at 300 DPI in report_assets/
+# Generates: fig1–fig5 PNG files at 300 DPI
 ```
 
-### Compile LaTeX Report
-
+### Compile LaTeX Paper
 ```bash
-cd NLP_Project_Report
-pdflatex main.tex   # Requires a local LaTeX installation (TeX Live / MiKTeX)
+cd NLP_Project_Report   # (after unzipping NLP_Project_Report.zip)
+pdflatex main.tex
+pdflatex main.tex       # Run twice for references
 ```
 
-Or open `main.tex` in [Overleaf](https://www.overleaf.com) for online compilation.
+---
+
+## 🧪 Tech Stack
+
+| Component | Tool | Version |
+|-----------|------|---------|
+| Language | Python | 3.13 |
+| Deep Learning | PyTorch | 2.15 |
+| NLP Models | HuggingFace Transformers | 5.21 |
+| Datasets | HuggingFace Datasets | 5.1 |
+| Evaluation | HuggingFace Evaluate | 0.4.6 |
+| Model Used | deepset/roberta-base-squad2 | 124M params |
+| Dataset Used | rajpurkar/squad_v2 | N=50 validation |
+| Visualisation | Matplotlib + Seaborn | latest |
+| Report Format | IEEE LaTeX (IEEEtran) | — |
 
 ---
 
-## 🛠️ Tech Stack
+## 🔑 Original Contributions (Beyond Reproduction)
 
-| Component | Technology |
-|---|---|
-| **Language** | Python 3.10+ |
-| **ML Framework** | HuggingFace Transformers 4.x |
-| **Reader Model** | `deepset/roberta-base-squad2` (124M params) |
-| **Dataset** | `rajpurkar/squad_v2` via HuggingFace Datasets |
-| **Evaluation** | HuggingFace `evaluate` (SQuAD metric) |
-| **Filtering** | Custom Jaccard token-overlap (no external deps) |
-| **Visualization** | Matplotlib 3.x, Seaborn |
-| **Report** | IEEE LaTeX (IEEEtran), Pandoc, xhtml2pdf |
-| **Notebook** | Google Colab (`.ipynb`) |
-| **Version Control** | Git + GitHub |
+1. **Feasibility reproduction** of SURE's core distraction phenomenon on a 124M-parameter open-source reader — confirming the effect without proprietary infrastructure
+2. **Design and implementation** of a zero-shot Jaccard token-overlap filter as an inference-time spurious mitigation hypothesis
+3. **Controlled ablation study** across 5 Jaccard thresholds — first systematic threshold sensitivity analysis for lexical spurious filtering on SQuAD v2
+4. **Failure analysis** via 2×2 outcome matrix revealing collateral deletion as the primary failure mode of lexical spurious filtering
+5. **Evidence** that lexical overlap is fundamentally insufficient as a spurious detection signal — motivating semantic embedding-based approaches for future work
 
 ---
 
-## 🔬 Original Contributions
+## 📜 References
 
-1. **End-to-end spurious feature reproduction pipeline** — A fully self-contained Python script (`run_m2_baseline.py`) that downloads a real model and dataset, injects spurious distractors via controlled query-correlated sentence injection, and computes standardized SQuAD EM/F1 metrics.
-
-2. **Pre-registered formal hypothesis** — Following open-science practice, the hypothesis and expected results (8–12% recovery) were formally recorded *before* any experiment was run, enabling honest evaluation of the outcome.
-
-3. **5-point ablation study with failure taxonomy** — Systematic sweep across τ ∈ {0.1–0.5} with per-threshold EM measurement, coupled with a 2×2 error transition matrix identifying the precise failure mode (44% collateral gold deletion).
-
-4. **Principled negative-result reporting** — Full analytical treatment of the negative finding, explaining *why* surface lexical overlap is a confounded signal, contrasting this with the semantic entailment modeling required for a valid defense.
-
-5. **Complete reproducible research package** — All code, results (JSON), diagrams (PNG, 300 DPI), and a compiled LaTeX IEEE paper are version-controlled and publicly available, meeting full reproducibility standards.
-
----
-
-## 📚 References
-
-1. Yang et al. (2026). *Quantifying and Improving the Robustness of Retrieval-Augmented Language Models Against Spurious Features in Grounding Data.* ACL 2026. [arXiv:2503.05587](https://arxiv.org/abs/2503.05587)
-
-2. Gao et al. (2025). *Investigating the Robustness of RAG at the Query Level.* arXiv:2507.06956.
-
-3. Rajpurkar et al. (2018). *Know What You Don't Know: Unanswerable Questions for SQuAD.* ACL 2018.
-
-4. Karpukhin et al. (2020). *Dense Passage Retrieval for Open-Domain Question Answering.* EMNLP 2020.
-
-5. Lewis et al. (2020). *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.* NeurIPS 2020.
+1. Yang et al. (2026). *Quantifying and Improving the Robustness of RALMs Against Spurious Features in Grounding Data.* ACL 2026. [arXiv:2503.05587](https://arxiv.org/abs/2503.05587)
+2. Perçin et al. (2025). *Investigating the Robustness of RAG at the Query Level.* ACL GEM² 2025. [arXiv:2507.06956](https://arxiv.org/abs/2507.06956)
+3. Lewis et al. (2020). *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks.* NeurIPS 2020.
+4. Lyu et al. (2024). *Benchmarking Large Language Models in Retrieval-Augmented Generation.* ACL 2024.
+5. Liu et al. (2024). *Lost in the Middle: How Language Models Use Long Contexts.* TACL 2024.
 
 ---
 
 <div align="center">
 
-**Siddhartha Shukla (230104) · Sugat Athawale (230109) · Ayush Dev (230061) · Piyush Kaushal (230112)**
-
-*B.Tech Computer Science & Artificial Intelligence — Rishihood University (Newton School of Technology)*
-
-[📂 Repository](https://github.com/SiddharthaShukla8/NLP_Project) · [📄 LaTeX Report](NLP_Project_Report.zip) · [🤗 Model](https://huggingface.co/deepset/roberta-base-squad2) · [📊 Dataset](https://huggingface.co/datasets/rajpurkar/squad_v2)
+**Rishihood University (Newton School of Technology) · B.Tech CS & AI · 2023–2027**  
+Siddhartha Shukla · Sugat Athawale · Ayush Dev · Piyush Kaushal
 
 </div>
