@@ -22,17 +22,32 @@
 \title{Quantifying Spurious Grounding Robustness in Retrieval-Augmented Language Models: A Reproduction and Inference-Time Filtering Investigation}
 
 \author{
-    \IEEEauthorblockN{Siddhartha Shukla, Piyush Kaushal, Sugat Athawale, Ayush Dev}
-    \IEEEauthorblockA{Department of Computer Science \& Artificial Intelligence\\
-    Rishihood University (Newton School of Technology)\\
-    Sonipat, Haryana, India\\
-    Repository: \url{https://github.com/SiddharthaShukla8/NLP_Project}}
+\IEEEauthorblockN{Siddhartha Shukla}
+\IEEEauthorblockA{\textit{B.Tech CS \& AI, 230104}\\
+Rishihood University\\
+Newton School of Technology}
+\and
+\IEEEauthorblockN{Sugat Athawale}
+\IEEEauthorblockA{\textit{B.Tech CS \& AI, 230109}\\
+Rishihood University\\
+Newton School of Technology}
+\and
+\IEEEauthorblockN{Ayush Dev}
+\IEEEauthorblockA{\textit{B.Tech CS \& AI, 230061}\\
+Rishihood University\\
+Newton School of Technology}
+\and
+\IEEEauthorblockN{Piyush Kaushal}
+\IEEEauthorblockA{\textit{B.Tech CS \& AI, 230112}\\
+Rishihood University\\
+Newton School of Technology}
 }
 
 \maketitle
 
 \begin{abstract}
 Retrieval-Augmented Generation (RAG) integrates non-parametric retrieval corpora with parametric neural language models to anchor responses in external factual context and mitigate hallucination. However, recent benchmarks such as the SURE framework reveal that Retrieval-Augmented Language Models (RALMs) are acutely vulnerable to implicit, non-causal \textit{spurious features} embedded within retrieved grounding passages. In this paper, we investigate the empirical mechanics of this vulnerability and rigorously evaluate a zero-shot, inference-time preprocessing intervention designed to neutralize query-correlated distractors without requiring parameter fine-tuning. Using an extractive reader baseline (\texttt{deepset/roberta-base-squad2}) on the SQuAD v2.0 benchmark, we first replicate the core vulnerability phenomenon, measuring an Exact Match (EM) degradation from $68.00\%$ under clean gold context down to $54.00\%$ under query-correlated distractor injection (a $14.00\%$ robustness drop). We then formulate and pre-register a formal hypothesis: that filtering candidate context sentences exhibiting high directional keyword overlap ($\tau = 0.3$) prior to inference would eliminate spurious attention hijacking and recover $8.00\%\text{--}12.00\%$ EM. Controlled empirical evaluation conclusively refutes this hypothesis: token-overlap filtering causes reader performance to collapse catastrophically to $16.00\%$ EM (a net degradation of $-38.00\%$ relative to the unfiltered noisy condition). A systematic 5-point parameter ablation sweep ($\tau \in [0.1, 0.5]$) and a $2\times2$ error transition audit reveal that naive lexical overlap is an intrinsically confounded heuristic, inflicting a devastating $44.0\%$ collateral deletion rate on authentic gold evidence sentences. We conclude that surface lexical heuristics cannot separate spurious noise from evidentiary facts, demonstrating that robust inference-time RAG defense requires deep semantic entailment modeling rather than keyword pruning.
+ This work was conducted as part of the 4th-Year Undergraduate NLP Research Project (Research Track) by Siddhartha Shukla (230104), Sugat Athawale (230109), Ayush Dev (230061), and Piyush Kaushal (230112) at Rishihood University (Newton School of Technology).
 \end{abstract}
 
 \begin{IEEEkeywords}
