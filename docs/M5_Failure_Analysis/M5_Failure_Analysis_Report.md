@@ -56,3 +56,25 @@ To understand the exact failure mechanisms behind the $-38.00\%$ EM degradation 
 - **Filtered Prediction:** `""` (EM: 0.0, F1: 0.0)
 - **What Happened:** Filter made no difference
 - **Why:** Model parametric bias. The model failed to predict the answer even in Condition A (Clean Context), demonstrating that failure on this instance stems from the base model's inability to resolve the complex possessive syntactic coreference (*"King Malcolm III married Edgar's sister Margaret"*), rather than retrieval noise or filtering artifacts.
+
+---
+
+## 2. 2x2 Outcome Transition Matrix (N=50 Instances)
+
+To systematically assess the behavioral shifts induced by the filtering intervention across all 50 evaluation instances, we construct the 2x2 outcome matrix comparing prediction correctness under the Noisy Condition (Condition B) versus the Filtered Condition (Condition C, $\tau=0.3$):
+
+| | Filtered Correct | Filtered Wrong | Total |
+|---|:---:|:---:|:---:|
+| **Noisy Correct** | **5** *(Both Correct / No Help)* | **22** *(Filter Hurt / Collateral Damage)* | **27** |
+| **Noisy Wrong** | **3** *(Filter Helped / True Recovery)* | **20** *(Both Wrong / Persistent Failure)* | **23** |
+| **Total** | **8** | **42** | **50** |
+
+### Breakdown by Category:
+1. **Filter Hurt (Collateral Damage): 22 instances ($44.0\%$)**  
+   The model correctly answered the question in the noisy condition, but filtering degraded its performance by excising authentic gold sentences.
+2. **Both Wrong / Persistent Failure: 20 instances ($40.0\%$)**  
+   The model failed on the noisy input and remained incorrect after filtering.
+3. **Both Correct / No Help: 5 instances ($10.0\%$)**  
+   The gold context survived filtering and the model maintained correct predictions across both conditions.
+4. **Filter Helped (True Recovery): 3 instances ($6.0\%$)**  
+   The filter successfully eliminated the distractor without destroying the gold evidence, recovering the correct answer.
