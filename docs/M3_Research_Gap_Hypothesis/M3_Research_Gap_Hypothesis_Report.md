@@ -43,3 +43,39 @@ In exact accordance with the required academic specification:
 > - **Condition B (Noisy Unfiltered Baseline):** $54.00\%$ Exact Match (EM) (Observed Robustness Drop = $14.00\%$ EM)  
 > - **Condition C (Noisy Filtered Prediction):** $62.00\%\text{--}66.00\%$ Exact Match (EM)  
 > - **Predicted Recovery ($\Delta_{\text{recovery}}$):** Approximately $+8.00\%$ to $+12.00\%$ EM restoration without fine-tuning.
+
+---
+
+## Section 4 — Experimental Plan & Protocol
+
+Our controlled empirical investigation proceeds through a structured, numbered 7-stage protocol:
+
+1. **Sentence Boundary Segmentation & Token Preprocessing:**  
+   Parse the incoming grounding context document into individual sentence units $S = \{s_1, s_2, \dots, s_m\}$ utilizing punctuation-delimited regex rules (`(?<=[.!?])\s+`). For user question $q$ and each candidate context sentence $s_i$, remove standard closed-class English stopwords and punctuation to yield content-bearing token sets:
+   $$\mathcal{T}_q = \{w \in \text{lower}(\text{tokens}(q)) \mid w \notin \text{Stopwords}\}$$
+   $$\mathcal{T}_{s_i} = \{w \in \text{lower}(\text{tokens}(s_i)) \mid w \notin \text{Stopwords}\}$$
+
+2. **Jaccard / Directional Keyword Overlap Formulation:**  
+   Calculate the directional keyword overlap ratio between the question vocabulary and each sentence:
+   $$\text{Score}(s_i, q) = \frac{|\mathcal{T}_q \cap \mathcal{T}_{s_i}|}{|\mathcal{T}_q|}$$
+   This metric directly captures how aggressively a candidate sentence mirrors query keywords.
+
+3. **Inference-Time Sentence Pruning Mechanism:**  
+   Establish a pre-registered baseline decision threshold $\tau = 0.3$. Prune any sentence $s_i$ where $\text{Score}(s_i, q) > \tau$. If all candidate sentences exceed $\tau$, implement an empty-string safety fallback that returns the unmodified input to prevent downstream runtime exceptions.
+
+4. **Tri-Condition Controlled Evaluation Setup:**  
+   Feed the $N=50$ held-out SQuAD v2 validation instances through three strictly controlled evaluation regimes:
+   - **Condition A (Clean Baseline):** Reader evaluates original, unperturbed gold Wikipedia paragraphs.
+   - **Condition B (Noisy Unfiltered):** Reader evaluates gold paragraphs prepended with a high-overlap synthetic distractor sentence.
+   - **Condition C (Noisy Filtered, $\tau=0.3$):** Reader evaluates contexts that undergo sentence-level overlap pruning prior to reader input.
+
+5. **Official Metric Computation:**  
+   Compute Exact Match (EM) and Macro Token F1 across all conditions using Hugging Face's official SQuAD evaluation script (`evaluate.load('squad')`).
+
+6. **Systematic Ablation Threshold Schedule:**  
+   To evaluate sensitivity and identify optimal hyperparameter bounds, systematically execute an ablation sweep over 5 threshold values:
+   $$\tau \in \{0.1, 0.2, 0.3, 0.4, 0.5\}$$
+   Record Exact Match, Token F1, and the average number of pruned sentences per instance at each threshold level.
+
+7. **Hypothesis Verification & Negative Result Protocol:**  
+   Compare actual observed EM recovery $\Delta = \text{EM}_{\text{filtered}} - \text{EM}_{\text{noisy}}$ against the pre-registered prediction ($+8.00\%\text{--}+12.00\%$). If $\Delta < 0$, execute a qualitative failure case audit to inspect instances of collateral damage where genuine gold sentences were erroneously pruned.
