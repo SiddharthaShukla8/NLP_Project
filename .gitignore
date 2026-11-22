@@ -9,3 +9,4 @@ guideline.txt
 handbook.txt
 /tmp/
 
+__pycache__/
