@@ -146,14 +146,9 @@ python scripts/convert_docs_to_pdf.py
 ---
 
 ## 📊 Tech Stack
-* **Language & Runtime:** Python 3.13 / 3.14
-* **Deep Learning Framework:** PyTorch 2.6 / 2.15 (with Apple Silicon MPS & CUDA acceleration)
-* **Model Transformers:** Hugging Face Transformers 4.57 / 5.21
-* **Datasets & Evaluation:** Hugging Face Datasets 3.6 / 5.1, Hugging Face Evaluate 0.4.3 / 0.4.6
-* **Model Checkpoint:** `deepset/roberta-base-squad2` (124M parameter extractive reader)
-* **Dataset Hub:** `rajpurkar/squad_v2` (Wikipedia open-domain question answering)
-* **Visualization:** Matplotlib 3.11, Seaborn 0.13
-* **Document Compilation:** LaTeX / IEEEtran, xhtml2pdf, Markdown2, Pisa
+* **Core Libraries:** Python 3.13, PyTorch 2.15, Transformers 5.21, Datasets 5.1, Evaluate 0.4.6, HuggingFace Hub
+* **Models & Corpora:** `deepset/roberta-base-squad2`, `rajpurkar/squad_v2`
+* **Visualization & Publishing:** Matplotlib 3.11, Seaborn 0.13, IEEEtran LaTeX, Pisa PDF Engine
 
 ---
 
