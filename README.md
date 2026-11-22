@@ -120,9 +120,9 @@ Best threshold (0.5) still achieves only 30% EM — far below the 54% noisy base
 | M1 Literature Survey | [.md](docs/M1_Literature_Survey/M1_Literature_Survey_Report.md) | [.pdf](docs/M1_Literature_Survey/M1_Literature_Survey_Report.pdf) | 5 papers, comparison table, checklist |
 | M2 Baseline Reproduction | [.md](docs/M2_Baseline_Reproduction/M2_Baseline_Reproduction_Report.md) | [.pdf](docs/M2_Baseline_Reproduction/M2_Baseline_Reproduction_Report.pdf) | 14% drop confirmed, real inference |
 | M3 Research Gap & Hypothesis | [.md](docs/M3_Research_Gap_Hypothesis/M3_Research_Gap_Hypothesis_Report.md) | [.pdf](docs/M3_Research_Gap_Hypothesis/M3_Research_Gap_Hypothesis_Report.pdf) | Formal hypothesis, pre-experiment prediction |
-| M4 Controlled Experiments | [.md](docs/M4_Experiment_Results/M4_Experiment_Results_Report.md) | [.pdf](docs/M4_Experiment_Results/M4_Experiment_Results_Report.pdf) | Hypothesis refuted, ablation, negative result |
-| M5 Failure Analysis | [.md](docs/M5_Analysis_Discussion/M5_Analysis_Discussion_Report.md) | [.pdf](docs/M5_Analysis_Discussion/M5_Analysis_Discussion_Report.pdf) | 2×2 matrix, 5 failure cases, limitations |
-| M6 IEEE Paper | [.md](docs/M6_Final_Report/M6_Final_Report.md) | [.pdf](docs/M6_Final_Report/M6_Final_Report.pdf) | Complete 14-section research paper |
+| M4 Controlled Experiments | [.md](docs/M4_Controlled_Experiments/M4_Controlled_Experiments_Report.md) | [.pdf](docs/M4_Controlled_Experiments/M4_Controlled_Experiments_Report.pdf) | Hypothesis refuted, ablation, negative result |
+| M5 Failure Analysis | [.md](docs/M5_Failure_Analysis/M5_Failure_Analysis_Report.md) | [.pdf](docs/M5_Failure_Analysis/M5_Failure_Analysis_Report.pdf) | 2×2 matrix, 5 failure cases, limitations |
+| M6 IEEE Paper (Final Report) | [.md](docs/M6_Final_Paper/M6_Final_IEEE_Paper.md) | [Final Report (PDF)](docs/M6_Final_Paper/Final%20Report%20in%20IEEE.pdf) | Complete IEEE conference research paper |
 
 ---
 
@@ -135,9 +135,9 @@ NLP_Project/
 │   ├── M1_Literature_Survey/
 │   ├── M2_Baseline_Reproduction/
 │   ├── M3_Research_Gap_Hypothesis/
-│   ├── M4_Experiment_Results/
-│   ├── M5_Analysis_Discussion/
-│   └── M6_Final_Report/
+│   ├── M4_Controlled_Experiments/
+│   ├── M5_Failure_Analysis/
+│   └── M6_Final_Paper/               # Final IEEE Report (PDF + Markdown)
 │
 ├── 📂 notebooks/
 │   └── M2_Baseline_Reproduction_Colab.ipynb   # Runnable on Google Colab T4 GPU
@@ -160,7 +160,8 @@ NLP_Project/
 │   ├── fig4_ablation.png
 │   └── fig5_outcome_matrix.png
 │
-├── 📦 NLP_Project_Report.zip         # LaTeX + diagrams submission package
+├── 📂 NLP_Project_Report/            # Submission directory with Final Report PDF & LaTeX
+├── 📦 NLP_Project_Report.zip         # Final report submission package (PDF + LaTeX + diagrams)
 ├── 📄 requirements.txt
 └── 📄 README.md
 ```
