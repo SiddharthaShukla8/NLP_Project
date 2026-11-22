@@ -78,3 +78,41 @@ To systematically assess the behavioral shifts induced by the filtering interven
    The gold context survived filtering and the model maintained correct predictions across both conditions.
 4. **Filter Helped (True Recovery): 3 instances ($6.0\%$)**  
    The filter successfully eliminated the distractor without destroying the gold evidence, recovering the correct answer.
+
+---
+
+## 3. Key Finding from Failure Analysis
+
+The 2x2 matrix reveals that the filter hurt more cases than it helped. The primary failure mode is collateral deletion: because gold Wikipedia passages naturally share content words with questions (they are retrieved precisely because of topical relevance), Jaccard overlap cannot reliably distinguish spurious distractors from causal evidence. This finding motivates a semantic rather than lexical approach to spurious filtering in future work.
+
+---
+
+## 4. Methodological Limitations (5 Distinct Constraints)
+
+1. **Evaluation Sample Size Bound ($N=50$):**  
+   The empirical evaluation is scoped to $N=50$ answerable validation instances from SQuAD v2.0 due to educational compute bounds. While this sample size reliably exposes the attention-hijacking phenomenon and the filter's failure mechanisms, it does not achieve asymptotic statistical significance at conventional academic levels ($p < 0.05$).
+
+2. **Synthetic Distractor Uniformity:**  
+   Our experimental perturbation utilized a single synthetic query-correlated assertive template rather than generating distinct datasets for all five dimensions of the SURE taxonomy (style, source, logic, format, metadata). While this design isolates direct keyword-induced attention hijacking, it does not evaluate how lexical filtering interacts with subtle stylistic or structural artifacts.
+
+3. **Absence of Semantic Directionality in Filtering Heuristic:**  
+   The token-overlap filter operates strictly on set-theoretic keyword intersection without directional semantic modeling or Natural Language Inference (NLI). It cannot determine whether a sentence logically entails an answer or merely repeats question vocabulary, treating genuine evidence and deceptive distractors identically.
+
+4. **Extractive Encoder vs. Generative LLM Architecture:**  
+   Our experiments evaluated `deepset/roberta-base-squad2`, an extractive bidirectional encoder, rather than modern autoregressive decoder LLMs (e.g., Llama-3-8B or Mistral-7B). While the underlying cross-attention vulnerability is conceptually identical, autoregressive generators may exhibit distinct hallucination behaviors when exposed to truncated or noisy contexts.
+
+5. **In-Sample Threshold Optimization:**  
+   The parameter sweep across $\tau \in [0.1, 0.5]$ was conducted on the evaluation sample without a segregated validation set for hyperparameter tuning. While sufficient for descriptive sensitivity analysis, true operational deployment would require calibrating $\tau$ on held-out development data to prevent overfitting.
+
+---
+
+## 5. Threats to Validity (3 Core Dimensions)
+
+1. **Internal Validity — Tokenization and Segmentation Sensitivity:**  
+   Sentence boundary segmentation relied on regex-based punctuation splits, and token matching depended on a static English stopword list. Improper sentence splits on abbreviations or numbers could distort sentence token counts, causing unintended filtering decisions that affect downstream reader performance.
+
+2. **External Validity — Domain and Corpus Specificity:**  
+   All evaluated passages originate from encyclopedic Wikipedia articles within the SQuAD v2.0 benchmark. Models and filters may demonstrate substantially different behavior on complex multi-hop corpora (HotpotQA), conversational search datasets, or highly technical domains (legal or biomedical literature) where lexical overlap patterns differ.
+
+3. **Construct Validity — Exact Match as a Grounding Robustness Metric:**  
+   Exact Match (EM) requires strict string equality with human reference annotations, scoring partial extractions or semantically equivalent paraphrases as complete failures ($0.0$). While EM provides an objective, reproducible metric for extractive QA, it may overestimate model fragility compared to soft semantic evaluation metrics or human qualitative judgment.
