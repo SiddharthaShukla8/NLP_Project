@@ -68,3 +68,13 @@ To assess whether the severe performance collapse was specific to threshold $\ta
 | **0.3** | **16.00%** | **16.14%** | 2.42 |
 | **0.4** | **20.00%** | **21.48%** | 2.10 |
 | **0.5** | **30.00%** | **32.78%** | 1.60 |
+
+---
+
+## 5. Analysis of Negative Result (240 words)
+
+The controlled empirical evaluation conclusively refutes our pre-registered hypothesis: rather than restoring the $14.00\%$ Exact Match degradation caused by spurious distractor injection, applying an unsupervised token-overlap filter at threshold $\tau = 0.3$ triggered a catastrophic performance collapse, dropping Exact Match to $16.00\%$ (a net degradation of $-38.00\%$ relative to the unfiltered noisy baseline).
+
+The root cause of this failure lies in the intrinsic information architecture of reading comprehension benchmarks. In open-domain question answering, the Jaccard similarity and token overlap between question keywords and gold answer sentences is naturally and unavoidably high. An authentic gold passage contains the precise answer to the question; consequently, it organically shares core entities, verbs, and relational predicates with the query. Because both the malicious spurious distractor and the authentic gold evidence sentence exhibit high lexical overlap with the query, an unsupervised token-overlap filter cannot distinguish between deceptive non-causal surface matching and genuine evidentiary support.
+
+As a direct consequence, the filter produced a devastating **collateral deletion rate of $44.0\%$** (22 out of 50 instances). In nearly half of all test cases, the filter successfully excised the synthetic distractor but simultaneously stripped out the authentic gold sentence containing the answer span. Left with an amputated context devoid of the factual answer, the reader model was forced into empty predictions or hallucinations. This outcome reveals a fundamental limitation of unsupervised lexical overlap as a spurious detection signal: surface lexical redundancy is intrinsically confounded with causal semantic relevance.
