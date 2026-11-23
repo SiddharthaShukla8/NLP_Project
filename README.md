@@ -161,7 +161,6 @@ NLP_Project/
 │   └── fig5_outcome_matrix.png
 │
 ├── 📂 NLP_Project_Report/            # Submission directory with Final Report PDF & LaTeX
-├── 📦 NLP_Project_Report.zip         # Final report submission package (PDF + LaTeX + diagrams)
 ├── 📄 requirements.txt
 └── 📄 README.md
 ```
@@ -203,7 +202,7 @@ python report_assets/generate_diagrams.py
 
 ### Compile LaTeX Paper
 ```bash
-cd NLP_Project_Report   # (after unzipping NLP_Project_Report.zip)
+cd NLP_Project_Report
 pdflatex main.tex
 pdflatex main.tex       # Run twice for references
 ```

@@ -153,7 +153,7 @@ if __name__ == "__main__":
         ("docs/M3_Research_Gap_Hypothesis/M3_Research_Gap_Hypothesis_Report.md", "docs/M3_Research_Gap_Hypothesis/M3_Research_Gap_Hypothesis_Report.pdf"),
         ("docs/M4_Controlled_Experiments/M4_Controlled_Experiments_Report.md", "docs/M4_Controlled_Experiments/M4_Controlled_Experiments_Report.pdf"),
         ("docs/M5_Failure_Analysis/M5_Failure_Analysis_Report.md", "docs/M5_Failure_Analysis/M5_Failure_Analysis_Report.pdf"),
-        ("docs/M6_Final_Paper/M6_Final_IEEE_Paper.md", "docs/M6_Final_Paper/M6_Final_IEEE_Paper.pdf")
+        ("docs/M6_Final_Paper/M6_Final_IEEE_Paper.md", "docs/M6_Final_Paper/Final Report in IEEE.pdf")
     ]
     for md, pdf in docs:
         convert_file(md, pdf)
